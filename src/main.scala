@@ -1,4 +1,4 @@
 @main
 def main(): Unit = {
-  println("Hello María!")
+  println("Hello Laura!")
 }
