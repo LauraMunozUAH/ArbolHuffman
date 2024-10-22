@@ -119,8 +119,8 @@ trait codigoHuffman {
 
     //Arbol
     val arbolHuffman:ArbolHuff = RamaHuff(ramaHTMN, ramaLRUXPRF, List('h', 't', 'm', 'n', 'l', 'o', 'u', 'x', 'p', 'r', 'f'), 17)
-    //val listabits:List[Bit] = cadenaAListaChars("0100111110011011110010")
-    //val mensaje = decodificar(arbolHuffman)(listabits)
-    //println(mensaje)
+    val listabits:List[Bit] = List(0,1,0,0,1,1,1,1,1,0,0,1,1,0,1,1,1,1,0,0,1,0)
+    val mensaje = decodificar(arbolHuffman)(listabits)
+    println(mensaje)
 
 }
