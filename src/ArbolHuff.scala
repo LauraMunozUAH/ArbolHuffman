@@ -1,3 +1,5 @@
+import scala.annotation.tailrec
+
 abstract class ArbolHuff {
   def pesoArbol: Int = this match
     case HojaHuff(_, p) => p
@@ -7,7 +9,41 @@ abstract class ArbolHuff {
   def caracteres:List[Char]= this match
     case HojaHuff(c, _) => List(c)
     case RamaHuff(nodoIzq, nodoDcha) => nodoIzq.caracteres ++ nodoDcha.caracteres
+
+  //Función que pasa de cadena de texto a lista de caracteres
+  def cadenaAListaChars(cadena: String): List[Char] =
+    @tailrec
+    def cAlCharsAux(posicion: Int, listaAux: List[Char]): List[Char] = posicion match
+      case p if p >= cadena.length => listaAux.reverse //caso base, hemos llegado al final de la cadena
+      case _ => cAlCharsAux(posicion + 1, cadena.charAt(posicion) :: listaAux) // Agregamos el carácter a la listaAux y continuamos con la recursividad
+
+    cAlCharsAux(0, Nil)
+
+  def listaCharsACadena(listaCar: List[Char]): String =
+    @tailrec
+    def lCharsACAux(listaCar: List[Char], cadena: String): String = listaCar match
+      case Nil => cadena // Cuando la lista está vacía, devuelve el resultado acumulado como String
+      case head :: tail => lCharsACAux(tail, cadena + head) // Añadimos el carácter al StringBuilder y continuamos
+
+    lCharsACAux(listaCar, "")
+  type Bit = 0 | 1 //Creación del tipo de dato bit
+
+  // Función que a partir de una lista de bits devuelve el texto
+  def decodificar(bits: List[Bit]): String =
+    @tailrec
+    def decodificarAux(subArbol: ArbolHuff, restobits: List[Bit], resultado: List[Char]): String = (subArbol, restobits) match
+      //Caso hoja, añadir caracter y empezar de nuevo
+      case (HojaHuff(caracter, _), _) => decodificarAux(this, restobits, caracter :: resultado)
+      //Caso rama, depende del bit 0 izq 1dcha
+      case (RamaHuff(nodoIzq, _), 0 :: tail) => decodificarAux(nodoIzq, tail, resultado)
+      case (RamaHuff(_, nodoDcha), 1 :: tail) => decodificarAux(nodoDcha, tail, resultado)
+      //No quedan bits
+      case _ => listaCharsACadena(resultado.reverse) //Invertimos y convertimos a cadena de texto
+
+    decodificarAux(this, bits, Nil)
 }
+
+
 
 case class RamaHuff(nodoIzq:ArbolHuff, nodoDcha: ArbolHuff) extends ArbolHuff
 case class HojaHuff(caracter:Char, peso: Int) extends ArbolHuff
