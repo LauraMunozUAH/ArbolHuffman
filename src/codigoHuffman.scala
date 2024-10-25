@@ -77,7 +77,7 @@ trait codigoHuffman {
     //cadena a lista de caracteres
     val listacaracteres:List[Char]=cadenaAListaChars(cadena)
     codificarLista(arbol,listacaracteres)
-  
+
   def main(args: Array[String]): Unit =
     //INSTANCIAR EL ARBOL
     //Hojas
