@@ -41,7 +41,23 @@ abstract class ArbolHuff {
       case _ => listaCharsACadena(resultado.reverse) //Invertimos y convertimos a cadena de texto
 
     decodificarAux(this, bits, Nil)
+
+  //Determina si el árbol contiene o no un caracter
+  def arbolcontiene(char:Char): Boolean = this match
+    case HojaHuff(caracter, _) => caracter == char
+    case RamaHuff(nodoIzq, nodoDcha) => nodoIzq.arbolcontiene(char) || nodoDcha.arbolcontiene(char)
+  //Convierte el texto a una cadena de bits
+  def codificar(cadena: String): List[Bit] =
+    @tailrec
+    def codificarAux(caracter: Char, arbol: ArbolHuff, listabits: List[Bit]): List[Bit] = arbol match
+      case HojaHuff(c, _) if c == caracter => listabits
+      case RamaHuff(nodoIzq, _) if nodoIzq.arbolcontiene(caracter) => codificarAux(caracter, nodoIzq, listabits :+ 0)
+      case RamaHuff(_, nodoDcha) if nodoDcha.arbolcontiene(caracter) => codificarAux(caracter, nodoDcha, listabits :+ 1)
+      case _ => throw new IllegalArgumentException("Carácter no está")
+    //Convertir cada caracter de la cadena a binario y concatena la lista
+    cadena.foldLeft(List[Bit]())((acc, char) => acc ++ codificarAux(char, this, Nil))
 }
+
 
 
 
@@ -49,7 +65,7 @@ case class RamaHuff(nodoIzq:ArbolHuff, nodoDcha: ArbolHuff) extends ArbolHuff
 case class HojaHuff(caracter:Char, peso: Int) extends ArbolHuff
 
 @main
-def main():Unit=
+def main():Unit =
   //INSTANCIAR EL ARBOL
   //Hojas
   val hojaEspacio = HojaHuff(' ', 7)
@@ -94,3 +110,5 @@ def main():Unit=
   val arbolHuff2: ArbolHuff= RamaHuff(HojaHuff('s', 4), RamaHuff(HojaHuff('o', 3), RamaHuff(HojaHuff('e', 2), HojaHuff(' ', 2))))
   println(arbolHuff2.pesoArbol)
   println(arbolHuff2.caracteres.mkString(", "))
+  println(arbolHuff2.decodificar(List(0,1,0,1,1,0)))
+  println(arbolHuff2.codificar("soe"))
