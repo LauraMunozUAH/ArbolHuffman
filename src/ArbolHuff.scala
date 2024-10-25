@@ -55,4 +55,6 @@ def main():Unit=
   //Arbol
   val arbolHuffman: ArbolHuff = RamaHuff(ramaHTMN, ramaLRUXPRF)
   println(arbolHuffman.pesoArbol)
-  println(arbolHuffman.caracteres.mkString(", "))
+  val arbolHuff2: ArbolHuff= RamaHuff(HojaHuff('s', 4), RamaHuff(HojaHuff('o', 3), RamaHuff(HojaHuff('e', 2), HojaHuff(' ', 2))))
+  println(arbolHuff2.pesoArbol)
+  println(arbolHuff2.caracteres.mkString(", "))
