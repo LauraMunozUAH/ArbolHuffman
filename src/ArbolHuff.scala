@@ -56,6 +56,14 @@ abstract class ArbolHuff {
       case _ => throw new IllegalArgumentException("Carácter no está")
     //Convertir cada caracter de la cadena a binario y concatena la lista
     cadena.foldLeft(List[Bit]())((acc, char) => acc ++ codificarAux(char, this, Nil))
+
+  // Crea un objeto RamaHuff integrando los dos ArbolHuff (izquierdo y derecho) que se le pasan como parámetros
+  def creaRamaHuff(izq:ArbolHuff,dcha:ArbolHuff):RamaHuff=
+    RamaHuff(izq,dcha)
+
+  //Comprobar que la lista solo tenga un elemento
+  def esListaSingleton(lista:List[ArbolHuff]):Boolean=
+    lista.length==1 //la lista tiene un elemento
 }
 
 
