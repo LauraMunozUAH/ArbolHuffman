@@ -64,8 +64,46 @@ abstract class ArbolHuff {
   //Comprobar que la lista solo tenga un elemento
   def esListaSingleton(lista:List[ArbolHuff]):Boolean=
     lista.length==1 //la lista tiene un elemento
-}
 
+  // Convierte la lista de caracteres en distribución de frecuencias.
+  def ListaCharsADistFrec(listaChar: List[Char]): List[(Char, Int)] =
+    // Función auxiliar recursiva de cola
+    @tailrec
+    def ListaCharAux(listaChars: List[Char], listaDevolver: List[(Char, Int)]): List[(Char, Int)] = listaChars match
+      case Nil => listaDevolver.reverse // Caso base: si la lista está vacía, devolvemos el acumulador
+      case head :: tail =>
+        listaDevolver.find(_._1 == head) match
+          case Some((c, count)) =>
+            // Si el carácter ya está en el acumulador, actualizamos la frecuencia
+            ListaCharAux(tail, listaDevolver.filterNot(_._1 == head) :+ (c, count + 1))
+          case None =>
+            // Si el carácter no está, lo agregamos con frecuencia 1
+            ListaCharAux(tail, (head, 1)::listaDevolver)
+
+    // Llamada inicial con la lista de caracteres y una lista vacía como acumulador
+    ListaCharAux(listaChar, List.empty)
+
+  // Convierte la distribución en una lista de hojas ordenada
+  def DistribFrecAListaHojas(frec: List[(Char, Int)]): List[HojaHuff] = {
+    @tailrec
+    def insertarOrdenado(hoja: HojaHuff, lista: List[HojaHuff], acumulado: List[HojaHuff]): List[HojaHuff] = lista match {
+      case Nil => (hoja :: acumulado).reverse // Insertamos la hoja si la lista está vacía y devolvemos la lista acumulada
+      case head :: tail if hoja.peso <= head.peso => (hoja :: lista ::: acumulado).reverse
+      case head :: tail => insertarOrdenado(hoja, tail, head :: acumulado) // Recorremos hasta encontrar la posición correcta
+    }
+
+    @tailrec
+    def convertirYOrdenar(frecuencias: List[(Char, Int)], acumulado: List[HojaHuff]): List[HojaHuff] = frecuencias match {
+      case Nil => acumulado.reverse // Al terminar la lista, devolvemos el acumulado ordenado
+      case (char, peso) :: tail =>
+        // Creamos una nueva hoja y la insertamos en la posición ordenada en el acumulador
+        val nuevaHoja = HojaHuff(char, peso)
+        convertirYOrdenar(tail, insertarOrdenado(nuevaHoja, acumulado, Nil))
+    }
+
+    convertirYOrdenar(frec, Nil) // Llamada inicial con lista vacía como acumulador
+  }
+}
 
 
 
@@ -73,7 +111,7 @@ case class RamaHuff(nodoIzq:ArbolHuff, nodoDcha: ArbolHuff) extends ArbolHuff
 case class HojaHuff(caracter:Char, peso: Int) extends ArbolHuff
 
 @main
-def main():Unit =
+def main():Unit= {
   //INSTANCIAR EL ARBOL
   //Hojas
   val hojaEspacio = HojaHuff(' ', 7)
@@ -115,8 +153,14 @@ def main():Unit =
   //Arbol
   val arbolHuffman: ArbolHuff = RamaHuff(ramaHTMN, ramaLRUXPRF)
   println(arbolHuffman.pesoArbol)
-  val arbolHuff2: ArbolHuff= RamaHuff(HojaHuff('s', 4), RamaHuff(HojaHuff('o', 3), RamaHuff(HojaHuff('e', 2), HojaHuff(' ', 2))))
+  val arbolHuff2: ArbolHuff = RamaHuff(HojaHuff('s', 4), RamaHuff(HojaHuff('o', 3), RamaHuff(HojaHuff('e', 2), HojaHuff(' ', 2))))
   println(arbolHuff2.pesoArbol)
   println(arbolHuff2.caracteres.mkString(", "))
-  println(arbolHuff2.decodificar(List(0,1,0,1,1,0)))
+  println(arbolHuff2.decodificar(List(0, 1, 0, 1, 1, 0)))
   println(arbolHuff2.codificar("soe"))
+  // Prueba de lista de frecuencias de caracteres
+  val texto = "huffman"
+  val listaChars = texto.toList
+  println("Distribución de frecuencias: " + arbolHuffman.ListaCharsADistFrec(listaChars))
+  println(arbolHuffman.DistribFrecAListaHojas(arbolHuffman.ListaCharsADistFrec(listaChars)))
+}
