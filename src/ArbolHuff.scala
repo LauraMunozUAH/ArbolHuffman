@@ -57,14 +57,6 @@ abstract class ArbolHuff {
     //Convertir cada caracter de la cadena a binario y concatena la lista
     cadena.foldLeft(List[Bit]())((acc, char) => acc ++ codificarAux(char, this, Nil))
 
-  // Crea un objeto RamaHuff integrando los dos ArbolHuff (izquierdo y derecho) que se le pasan como parámetros
-  def creaRamaHuff(izq:ArbolHuff,dcha:ArbolHuff):RamaHuff=
-    RamaHuff(izq,dcha)
-
-  //Comprobar que la lista solo tenga un elemento
-  def esListaSingleton(lista:List[ArbolHuff]):Boolean=
-    lista.length==1 //la lista tiene un elemento
-
   // Convierte la lista de caracteres en distribución de frecuencias.
   def ListaCharsADistFrec(listaChar: List[Char]): List[(Char, Int)] =
     // Función auxiliar recursiva de cola
@@ -95,6 +87,37 @@ abstract class ArbolHuff {
 
     // Convertimos cada tupla a HojaHuff e insertamos en la lista ordenada
     frec.foldLeft(List.empty[HojaHuff]) { case (acc, (caracter, peso)) => insertar(HojaHuff(caracter, peso), acc, Nil)}
+
+  // Crea un objeto RamaHuff integrando los dos ArbolHuff (izquierdo y derecho) que se le pasan como parámetros
+  def creaRamaHuff(izq: ArbolHuff, dcha: ArbolHuff): RamaHuff =
+    RamaHuff(izq, dcha)
+
+  //Comprobar que la lista solo tenga un elemento
+  def esListaSingleton(lista: List[ArbolHuff]): Boolean =
+    lista.length == 1 //la lista tiene un elemento
+
+  def insertarConOrden(nuevaRama: ArbolHuff, lista: List[ArbolHuff]): List[ArbolHuff] = lista match
+    case Nil => List(nuevaRama)
+    case head :: tail =>
+      if (nuevaRama.pesoArbol <= head.pesoArbol) nuevaRama :: lista
+      else  head :: insertarConOrden(nuevaRama,tail )
+
+  def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
+    if (nodos.length <= 1) nodos //devuelve la lista tal cual
+    else {
+      val (izq, dch) = (nodos.head, nodos.tail.head) //dos primeros nodos
+      val rama = creaRamaHuff(izq, dch)
+      // Añade la nueva rama a la lista y preserva el orden según el peso
+      val nuevaLista = insertarConOrden(rama, nodos.tail.tail)
+      combinar(nuevaLista)
+
+  def repetirHasta(combinar: List[ArbolHuff] => List[ArbolHuff], esListaSingleton: List[ArbolHuff] => Boolean)(lista: List[ArbolHuff]): List[ArbolHuff] = {
+    if (esListaSingleton(lista)) lista // Caso base
+    else {
+      val nuevalista= combinar(lista)
+      repetirHasta(combinar, esListaSingleton)(nuevalista)
+    } // combina la lista
+  }
 }
 
 
