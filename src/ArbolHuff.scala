@@ -83,26 +83,18 @@ abstract class ArbolHuff {
     // Llamada inicial con la lista de caracteres y una lista vacía como acumulador
     ListaCharAux(listaChar, List.empty)
 
+
   // Convierte la distribución en una lista de hojas ordenada
-  def DistribFrecAListaHojas(frec: List[(Char, Int)]): List[HojaHuff] = {
+  def DistribFrecAListaHojas(frec: List[(Char, Int)]): List[HojaHuff] =
     @tailrec
-    def insertarOrdenado(hoja: HojaHuff, lista: List[HojaHuff], acumulado: List[HojaHuff]): List[HojaHuff] = lista match {
-      case Nil => (hoja :: acumulado).reverse // Insertamos la hoja si la lista está vacía y devolvemos la lista acumulada
-      case head :: tail if hoja.peso <= head.peso => (hoja :: lista ::: acumulado).reverse
-      case head :: tail => insertarOrdenado(hoja, tail, head :: acumulado) // Recorremos hasta encontrar la posición correcta
-    }
+    def insertar(hoja: HojaHuff, lista: List[HojaHuff], acumulado: List[HojaHuff]): List[HojaHuff] = lista match
+      case Nil => (acumulado.reverse :+ hoja) // insertamos hoja al final del acumulado
+      case head :: tail if hoja.peso <= head.peso => (acumulado.reverse :+ hoja) ::: lista // Insertamos la hoja en la posición sin invertir
+      case head :: tail => insertar(hoja, tail, head :: acumulado) // Recorremos hasta encontrar la posición
 
-    @tailrec
-    def convertirYOrdenar(frecuencias: List[(Char, Int)], acumulado: List[HojaHuff]): List[HojaHuff] = frecuencias match {
-      case Nil => acumulado.reverse // Al terminar la lista, devolvemos el acumulado ordenado
-      case (char, peso) :: tail =>
-        // Creamos una nueva hoja y la insertamos en la posición ordenada en el acumulador
-        val nuevaHoja = HojaHuff(char, peso)
-        convertirYOrdenar(tail, insertarOrdenado(nuevaHoja, acumulado, Nil))
-    }
 
-    convertirYOrdenar(frec, Nil) // Llamada inicial con lista vacía como acumulador
-  }
+    // Convertimos cada tupla a HojaHuff e insertamos en la lista ordenada
+    frec.foldLeft(List.empty[HojaHuff]) { case (acc, (caracter, peso)) => insertar(HojaHuff(caracter, peso), acc, Nil)}
 }
 
 
