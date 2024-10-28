@@ -84,7 +84,6 @@ abstract class ArbolHuff {
       case head :: tail if hoja.peso <= head.peso => (acumulado.reverse :+ hoja) ::: lista // Insertamos la hoja en la posición sin invertir
       case head :: tail => insertar(hoja, tail, head :: acumulado) // Recorremos hasta encontrar la posición
 
-
     // Convertimos cada tupla a HojaHuff e insertamos en la lista ordenada
     frec.foldLeft(List.empty[HojaHuff]) { case (acc, (caracter, peso)) => insertar(HojaHuff(caracter, peso), acc, Nil)}
 
@@ -96,28 +95,39 @@ abstract class ArbolHuff {
   def esListaSingleton(lista: List[ArbolHuff]): Boolean =
     lista.length == 1 //la lista tiene un elemento
 
+  def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
+    if (nodos.length <= 1) then nodos
+    else
+      val (izq, dch) = (nodos.head, nodos.tail.head) //dos primeros nodos
+      val nuevaRama = creaRamaHuff(izq, dch)
+      val nuevalista = insertarConOrden(nuevaRama, nodos.tail.tail) //añade la rama a la lista
+      combinar(nuevalista)
+
   def insertarConOrden(nuevaRama: ArbolHuff, lista: List[ArbolHuff]): List[ArbolHuff] = lista match
     case Nil => List(nuevaRama)
     case head :: tail =>
       if (nuevaRama.pesoArbol <= head.pesoArbol) nuevaRama :: lista
       else  head :: insertarConOrden(nuevaRama,tail )
 
-  def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
-    if (nodos.length <= 1) nodos //devuelve la lista tal cual
-    else {
-      val (izq, dch) = (nodos.head, nodos.tail.head) //dos primeros nodos
-      val rama = creaRamaHuff(izq, dch)
-      // Añade la nueva rama a la lista y preserva el orden según el peso
-      val nuevaLista = insertarConOrden(rama, nodos.tail.tail)
-      combinar(nuevaLista)
-
   def repetirHasta(combinar: List[ArbolHuff] => List[ArbolHuff], esListaSingleton: List[ArbolHuff] => Boolean)(lista: List[ArbolHuff]): List[ArbolHuff] = {
     if (esListaSingleton(lista)) lista // Caso base
     else {
-      val nuevalista= combinar(lista)
+      val nuevalista = combinar(lista)
       repetirHasta(combinar, esListaSingleton)(nuevalista)
     } // combina la lista
   }
+  //Crear el Arbol de Huffman
+  def crearArbolHuffman(cadena:String):ArbolHuff=
+    //Lista de caracteres
+    val listaChars= cadenaAListaChars(cadena)
+    //frecuencias
+    val frecuencias=ListaCharsADistFrec(listaChars)
+    //lista de hojas segun el peso
+    val listaHojas = DistribFrecAListaHojas(frecuencias)
+    //Arbol combinando nodos
+    repetirHasta(combinar, esListaSingleton)(listaHojas)match
+      case List(arbol)=> arbol //devuelve el arbol completo
+      case _ => throw new IllegalStateException("Error al crear el arbol")
 }
 
 
