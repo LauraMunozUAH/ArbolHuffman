@@ -95,6 +95,8 @@ abstract class ArbolHuff {
   def esListaSingleton(lista: List[ArbolHuff]): Boolean =
     lista.length == 1 //la lista tiene un elemento
 
+
+  //Revisar y hacer que la lista este ordenada
   def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
     if (nodos.length <= 1) then nodos
     else
@@ -187,5 +189,24 @@ def main():Unit= {
   val texto = "huffman"
   val listaChars = texto.toList
   println("Distribución de frecuencias: " + arbolHuffman.ListaCharsADistFrec(listaChars))
+  //Prueba de lista de Hojas
   println(arbolHuffman.DistribFrecAListaHojas(arbolHuffman.ListaCharsADistFrec(listaChars)))
+  //Prueba de creación de rama
+  val h1= HojaHuff('a', 2)
+  val r1 = RamaHuff(HojaHuff('b',1), HojaHuff('c',1))
+  println(arbolHuff2.creaRamaHuff(h1, r1))
+  //Prueba de si es Lista Singleton
+  val l1:List[ArbolHuff] = List(h1, r1)
+  val l2:List[ArbolHuff] = List(h1)
+  println(arbolHuff2.esListaSingleton(l1)) //Debería devolver False
+  println(arbolHuff2.esListaSingleton(l2)) //Debería devolver True
+  //Prueba la función combinar
+  val h2 = HojaHuff('d', 3)
+  val h3 = HojaHuff('e', 5)
+  val l3:List[ArbolHuff] = List(h1, r1, h3, h2)
+  println(arbolHuff2.combinar(l3))
+  //Prueba de insertar con orden
+  val l4:List[ArbolHuff] = List(h1, r1, h3)
+  println(arbolHuff2.insertarConOrden(h2, l4))
+
 }
