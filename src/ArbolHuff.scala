@@ -80,7 +80,7 @@ abstract class ArbolHuff {
   def DistribFrecAListaHojas(frec: List[(Char, Int)]): List[HojaHuff] =
     @tailrec
     def insertar(hoja: HojaHuff, lista: List[HojaHuff], acumulado: List[HojaHuff]): List[HojaHuff] = lista match
-      case Nil => (acumulado.reverse :+ hoja) // insertamos hoja al final del acumulado
+      case Nil => acumulado.reverse :+ hoja // insertamos hoja al final del acumulado
       case head :: tail if hoja.peso <= head.peso => (acumulado.reverse :+ hoja) ::: lista // Insertamos la hoja en la posición sin invertir
       case head :: tail => insertar(hoja, tail, head :: acumulado) // Recorremos hasta encontrar la posición
 
@@ -98,7 +98,7 @@ abstract class ArbolHuff {
 
   //Revisar y hacer que la lista este ordenada
   def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
-    if (nodos.length <= 1) then nodos
+    if nodos.length <= 1 then nodos
     else
       val (izq, dch) = (nodos.head, nodos.tail.head) //dos primeros nodos
       val nuevaRama = creaRamaHuff(izq, dch)
