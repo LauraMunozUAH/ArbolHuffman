@@ -98,11 +98,12 @@ abstract class ArbolHuff {
 
   //Revisar y hacer que la lista este ordenada
   def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
-    if nodos.length <= 1 then nodos
+    val nodosOrdenados = nodos.sortBy(_.pesoArbol)
+    if nodosOrdenados.length <= 1 then nodosOrdenados
     else
-      val (izq, dch) = (nodos.head, nodos.tail.head) //dos primeros nodos
+      val (izq, dch) = (nodosOrdenados.head, nodosOrdenados.tail.head) //dos primeros nodos
       val nuevaRama = creaRamaHuff(izq, dch)
-      val nuevalista = insertarConOrden(nuevaRama, nodos.tail.tail) //añade la rama a la lista
+      val nuevalista = insertarConOrden(nuevaRama, nodosOrdenados.tail.tail) //añade la rama a la lista
       combinar(nuevalista)
 
   def insertarConOrden(nuevaRama: ArbolHuff, lista: List[ArbolHuff]): List[ArbolHuff] = lista match
@@ -204,7 +205,11 @@ def main():Unit= {
   val h2 = HojaHuff('d', 3)
   val h3 = HojaHuff('e', 5)
   val l3:List[ArbolHuff] = List(h1, r1, h3, h2)
+  val l31:List[ArbolHuff] = List(h1, r1, h2, h3)
+  val l32:List[ArbolHuff] = List(h3, h1, r1, h2)
   println(arbolHuff2.combinar(l3))
+  println(arbolHuff2.combinar(l31))
+  println(arbolHuff2.combinar(l32))
   //Prueba de insertar con orden
   val l4:List[ArbolHuff] = List(h1, r1, h3)
   println(arbolHuff2.insertarConOrden(h2, l4))
