@@ -55,7 +55,7 @@ abstract class ArbolHuff {
       case RamaHuff(_, nodoDcha) if nodoDcha.arbolcontiene(caracter) => codificarAux(caracter, nodoDcha, listabits :+ 1)
       case _ => throw new IllegalArgumentException("Carácter no está")
     //Convertir cada caracter de la cadena a binario y concatena la lista
-    cadena.foldLeft(List[Bit]())((acc, char) => acc ++ codificarAux(char, this, Nil))
+    cadena.foldLeft(List[Bit]())((acumulador, char) => acumulador ++ codificarAux(char, this, Nil))
 
   // Convierte la lista de caracteres en distribución de frecuencias.
   def ListaCharsADistFrec(listaChar: List[Char]): List[(Char, Int)] =
@@ -98,12 +98,11 @@ abstract class ArbolHuff {
 
   //Función que coge una lista de nodos de clase ArbolHuff ordenandolos por sus pesos de forma creciente y combinandolos
   def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
-    val nodosOrdenados = nodos.sortBy(_.pesoArbol)
-    if nodosOrdenados.length <= 1 then nodosOrdenados
+    if nodos.length <= 1 then nodos
     else
-      val (izq, dch) = (nodosOrdenados.head, nodosOrdenados.tail.head) //dos primeros nodos
+      val (izq, dch) = (nodos.head, nodos.tail.head) //dos primeros nodos
       val nuevaRama = creaRamaHuff(izq, dch)
-      val nuevalista = insertarConOrden(nuevaRama, nodosOrdenados.tail.tail) //añade la rama a la lista
+      val nuevalista = insertarConOrden(nuevaRama, nodos.tail.tail) //añade la rama a la lista
       combinar(nuevalista)
 
   def insertarConOrden(nuevaRama: ArbolHuff, lista: List[ArbolHuff]): List[ArbolHuff] = lista match
@@ -227,12 +226,8 @@ def main():Unit= {
   //Prueba la función combinar
   val h2 = HojaHuff('d', 3)
   val h3 = HojaHuff('e', 5)
-  val l3:List[ArbolHuff] = List(h1, r1, h3, h2)
-  val l31:List[ArbolHuff] = List(h1, r1, h2, h3)
-  val l32:List[ArbolHuff] = List(h3, h1, r1, h2)
+  val l3:List[ArbolHuff] = List(h1, r1, h2, h3)
   println(arbolHuff2.combinar(l3))
-  println(arbolHuff2.combinar(l31))
-  println(arbolHuff2.combinar(l32))
   //Prueba de insertar con orden
   val l4:List[ArbolHuff] = List(h1, r1, h3)
   println(arbolHuff2.insertarConOrden(h2, l4))
