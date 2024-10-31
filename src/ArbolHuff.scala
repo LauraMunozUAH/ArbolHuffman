@@ -96,7 +96,7 @@ abstract class ArbolHuff {
     lista.length == 1 //la lista tiene un elemento
 
 
-  //Revisar y hacer que la lista este ordenada
+  //Función que coge una lista de nodos de clase ArbolHuff ordenandolos por sus pesos de forma creciente y combinandolos
   def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
     val nodosOrdenados = nodos.sortBy(_.pesoArbol)
     if nodosOrdenados.length <= 1 then nodosOrdenados
@@ -128,18 +128,41 @@ abstract class ArbolHuff {
     //lista de hojas segun el peso
     val listaHojas = DistribFrecAListaHojas(frecuencias)
     //Arbol combinando nodos
-    repetirHasta(combinar, esListaSingleton)(listaHojas)match
+    repetirHasta(combinar, esListaSingleton)(listaHojas) match
       case List(arbol)=> arbol //devuelve el arbol completo
       case _ => throw new IllegalStateException("Error al crear el arbol")
 }
 
+object ArbolHuff {
+  def apply(cadena: String): ArbolHuff =
+    new ArbolHuff {
+      override def crearArbolHuffman(cadena: String): ArbolHuff = super.crearArbolHuffman(cadena)
+    }crearArbolHuffman(cadena)
 
+  type Bit = 0 | 1
+  type TablaCodigos = List[(Char, List[Bit])]
+
+  // Transforma un árbol de Huffman en una tabla de codificación
+  def deArbolATabla(arbol: ArbolHuff): TablaCodigos =
+    def recorrer(arbol: ArbolHuff, codigoActual: List[Bit]): TablaCodigos = arbol match
+      case HojaHuff(caracter, _) => List((caracter, codigoActual))
+      case RamaHuff(nodoIzq, nodoDcha) =>
+        recorrer(nodoIzq, codigoActual :+ 0) ::: recorrer(nodoDcha, codigoActual :+ 1)
+    recorrer(arbol, Nil)
+
+
+}
 
 case class RamaHuff(nodoIzq:ArbolHuff, nodoDcha: ArbolHuff) extends ArbolHuff
 case class HojaHuff(caracter:Char, peso: Int) extends ArbolHuff
 
 @main
 def main():Unit= {
+  //MANERA DEFINITIVA DE CREAR EL ARBOL HUFFMAN
+  // Prueba del object para construir el árbol usando el método apply
+  val miArbol = ArbolHuff("huffman")
+  println(miArbol)
+
   //INSTANCIAR EL ARBOL
   //Hojas
   val hojaEspacio = HojaHuff(' ', 7)
@@ -213,5 +236,8 @@ def main():Unit= {
   //Prueba de insertar con orden
   val l4:List[ArbolHuff] = List(h1, r1, h3)
   println(arbolHuff2.insertarConOrden(h2, l4))
-
+  //Prueba repetirHasta y crearArbolHuffman
+  val texto2 = "huffman"
+  val arbolHuffman2: ArbolHuff = arbolHuffman.crearArbolHuffman(texto2)
+  println(arbolHuffman2)
 }
