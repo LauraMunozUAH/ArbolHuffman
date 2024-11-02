@@ -114,7 +114,7 @@ abstract class ArbolHuff {
       else  head :: insertarConOrden(nuevaRama,tail )
 
   def repetirHasta(combinar: List[ArbolHuff] => List[ArbolHuff], esListaSingleton: List[ArbolHuff] => Boolean)(lista: List[ArbolHuff]): List[ArbolHuff] = {
-    if (esListaSingleton(lista)) then lista // Caso base
+    if esListaSingleton(lista) then lista // Caso base
     else {
       val nuevalista = combinar(lista)
       repetirHasta(combinar, esListaSingleton)(nuevalista)
@@ -141,9 +141,9 @@ object ArbolHuff {
     }crearArbolHuffman(cadena)
 
   type Bit = 0 | 1
-  type TablaCodigos = List[(Char, List[Bit])]
+  private type TablaCodigos = List[(Char, List[Bit])]
 
-  // Transforma un árbol de Huffman en una tabla de codificación
+  // Transforma un árbol de Huffman en una tabla de codificaciónjengi
   def deArbolATabla(arbol: ArbolHuff): TablaCodigos =
     def recorrer(arbol: ArbolHuff, codigoActual: List[Bit]): TablaCodigos = arbol match
       case HojaHuff(caracter, _) => List((caracter, codigoActual))
@@ -197,6 +197,52 @@ object ArbolHuff {
 case class RamaHuff(nodoIzq:ArbolHuff, nodoDcha: ArbolHuff) extends ArbolHuff
 case class HojaHuff(caracter:Char, peso: Int) extends ArbolHuff
 
+object miPrograma extends App {
+  val textoOriginal = "ejemplo de Arbol Huffman"
+
+  // Crear el árbol de Huffman
+  val arbolHuffman = ArbolHuff(textoOriginal)
+  println(s"Texto original: $textoOriginal")
+
+  // Convertir el árbol a una tabla de códigos
+  val tablaCodigos = ArbolHuff.deArbolATabla(arbolHuffman)
+  println(s"Tabla de códigos: $tablaCodigos")
+
+  // Codificar el texto original
+  val codificacion = ArbolHuff.codificarTabla(tablaCodigos)(textoOriginal)
+  println(s"Codificación: $codificacion")
+
+  // Decodificar la codificación de vuelta al texto original
+  val textoDecodificado = ArbolHuff.decodificarTabla(tablaCodigos)(codificacion)
+  println(s"Texto decodificado: $textoDecodificado")
+
+  // Convertir la cadena a lista de caracteres
+  val listaChars = arbolHuffman.cadenaAListaChars(textoOriginal)
+  println(s"Lista de caracteres de '$textoOriginal': $listaChars")
+
+  // Convertir la lista de caracteres de nuevo a cadena
+  val cadenaDesdeLista = arbolHuffman.listaCharsACadena(listaChars)
+  println(s"Cadena convertida desde la lista de caracteres: $cadenaDesdeLista")
+
+  // Probar la creación de la lista de distribución de frecuencias
+  val frecuencias = arbolHuffman.ListaCharsADistFrec(listaChars)
+  println(s"Frecuencias de caracteres: $frecuencias")
+
+  // Probar la conversión de frecuencias a hojas
+  val listaHojas = arbolHuffman.DistribFrecAListaHojas(frecuencias)
+  println(s"Lista de hojas según frecuencias: $listaHojas")
+
+  // Comprobar la combinación de nodos
+  val nodosCombinados = arbolHuffman.combinar(listaHojas)
+  println(s"Nodos combinados: $nodosCombinados")
+
+  // Comprobar si la lista de nodos tiene un solo elemento
+  println(s"La lista de nodos combinados tiene un único elemento: ${arbolHuffman.esListaSingleton(nodosCombinados)}")
+
+  // Mostrar el peso del árbol
+  println(s"Peso del árbol de Huffman: ${arbolHuffman.pesoArbol}")
+}
+
 @main
 def main():Unit= {
   //MANERA DEFINITIVA DE CREAR EL ARBOL HUFFMAN
@@ -205,7 +251,7 @@ def main():Unit= {
   println(miArbol)
 
   //INSTANCIAR EL ARBOL
-  //Hojas
+  // Hojas
   val hojaEspacio = HojaHuff(' ', 7)
   val hojaA = HojaHuff('a', 4)
   val hojaE = HojaHuff('e', 4)
