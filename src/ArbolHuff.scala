@@ -1,3 +1,5 @@
+import ArbolHuff.{codificarTabla, deArbolATabla, decodificarTabla}
+
 import scala.annotation.tailrec
 
 abstract class ArbolHuff {
@@ -177,18 +179,19 @@ object ArbolHuff {
 
   //Decodifica mensajes empleando la tabla
   def decodificarTabla(tabla: TablaCodigos)(lista: List[Bit]): String =
-    def decodificarTablaAux(actual: List[Bit], resto: List[Bit], cadena: String): String =
-      if resto.length == 0 && actual.length == 0 then cadena
-      else
-        val nuevalista: List[Bit] = actual :+ resto.head //añade el primer bit de resto a actual
+    def decodificarTablaAux(bits: List[Bit], resultado: String, acumulado: List[Bit]): String = bits match {
+      case Nil =>
+        if acumulado.isEmpty then resultado  //caso acumulado vacio
+        else resultado + buscarChar(acumulado, tabla)
+      case bit :: resto =>
+        val nuevoacumulado: List[Bit] = acumulado :+ bit  //Añade el bit al acumulado
         try
-          val char = buscarChar(nuevalista, tabla)
-          decodificarTablaAux(resto.tail, Nil, cadena + char) //Sie ncuentra el caracter lo añade
+          val char = buscarChar(nuevoacumulado, tabla)
+          decodificarTablaAux(resto, resultado + char, Nil) //si encuentra el caracter reinicia el acumulado
         catch
-          case _: IllegalArgumentException => decodificarTablaAux(resto.tail, nuevalista, cadena) //Sigue buscando
-    decodificarTablaAux(lista, Nil, " ") //La cadena comienza vacia
-
-
+          case _: IllegalArgumentException => decodificarTablaAux(resto, resultado, nuevoacumulado) //Si no, sigue acumulando
+    }
+    decodificarTablaAux(lista, "", Nil)
 }
 
 case class RamaHuff(nodoIzq:ArbolHuff, nodoDcha: ArbolHuff) extends ArbolHuff
@@ -274,4 +277,10 @@ def main():Unit= {
   val texto2 = "huffman"
   val arbolHuffman2: ArbolHuff = arbolHuffman.crearArbolHuffman(texto2)
   println(arbolHuffman2)
+
+  val tabla = deArbolATabla(arbolHuffman2)
+  val codificado = codificarTabla(tabla)(texto2)
+  println(codificado)
+  val mensaje = decodificarTabla(tabla)(codificado)
+  println(mensaje)
 }
