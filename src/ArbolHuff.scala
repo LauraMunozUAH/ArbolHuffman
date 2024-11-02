@@ -103,7 +103,7 @@ abstract class ArbolHuff {
       val (izq, dch) = (nodos.head, nodos.tail.head) //dos primeros nodos
       val nuevaRama = creaRamaHuff(izq, dch)
       val nuevalista = insertarConOrden(nuevaRama, nodos.tail.tail) //añade la rama a la lista
-      combinar(nuevalista)
+      combinar(nuevalista) //combina la lista
 
   def insertarConOrden(nuevaRama: ArbolHuff, lista: List[ArbolHuff]): List[ArbolHuff] = lista match
     case Nil => List(nuevaRama)
@@ -112,11 +112,11 @@ abstract class ArbolHuff {
       else  head :: insertarConOrden(nuevaRama,tail )
 
   def repetirHasta(combinar: List[ArbolHuff] => List[ArbolHuff], esListaSingleton: List[ArbolHuff] => Boolean)(lista: List[ArbolHuff]): List[ArbolHuff] = {
-    if (esListaSingleton(lista)) lista // Caso base
+    if (esListaSingleton(lista)) then lista // Caso base
     else {
       val nuevalista = combinar(lista)
       repetirHasta(combinar, esListaSingleton)(nuevalista)
-    } // combina la lista
+    } 
   }
   //Crear el Arbol de Huffman
   def crearArbolHuffman(cadena:String):ArbolHuff=
@@ -145,9 +145,48 @@ object ArbolHuff {
   def deArbolATabla(arbol: ArbolHuff): TablaCodigos =
     def recorrer(arbol: ArbolHuff, codigoActual: List[Bit]): TablaCodigos = arbol match
       case HojaHuff(caracter, _) => List((caracter, codigoActual))
-      case RamaHuff(nodoIzq, nodoDcha) =>
-        recorrer(nodoIzq, codigoActual :+ 0) ::: recorrer(nodoDcha, codigoActual :+ 1)
+      case RamaHuff(nodoIzq, nodoDcha) => recorrer(nodoIzq, codigoActual :+ 0) ::: recorrer(nodoDcha, codigoActual :+ 1)
+
     recorrer(arbol, Nil)
+
+  //encuentra el codigo correspondiente
+  def buscarCodigo(char: Char, tabla: TablaCodigos): List[Bit] = tabla match
+    case Nil => throw new IllegalArgumentException("no encontrado")
+    case (caracter, codigo) :: resto =>
+      if (caracter == char) then codigo
+      else buscarCodigo(char, resto)
+
+  // Encuentra el carácter
+  def buscarChar(bits: List[Bit], tabla: TablaCodigos): Char =
+    @tailrec
+    def buscarAux(tabla: TablaCodigos): Char = tabla match {
+      case Nil => throw new IllegalArgumentException("no encontrado")
+      case (caracter, codigo) :: resto =>
+        if (codigo == bits) then caracter
+        else buscarAux(resto) //Sigue buscando
+    }
+    buscarAux(tabla)
+  //Codifica mensajes con la tabla
+  def codificarTabla(arbol: TablaCodigos)(cadena: String): List[Bit]=
+    def codificarTablaAux(cadena: List[Char], resultado: List[Bit]): List[Bit] = cadena match
+      case Nil => resultado
+      case char :: resto =>
+        val bits: List[Bit] = buscarCodigo(char, arbol) //busca la codificacion del caracter
+        codificarTablaAux(resto, resultado ::: bits) //añade los bits encontrados
+    codificarTablaAux(cadena.toList, Nil)
+
+  //Decodifica mensajes empleando la tabla
+  def decodificarTabla(tabla: TablaCodigos)(lista: List[Bit]): String =
+    def decodificarTablaAux(actual: List[Bit], resto: List[Bit], cadena: String): String =
+      if resto.length == 0 && actual.length == 0 then cadena
+      else
+        val nuevalista: List[Bit] = actual :+ resto.head //añade el primer bit de resto a actual
+        try
+          val char = buscarChar(nuevalista, tabla)
+          decodificarTablaAux(resto.tail, Nil, cadena + char) //Sie ncuentra el caracter lo añade
+        catch
+          case _: IllegalArgumentException => decodificarTablaAux(resto.tail, nuevalista, cadena) //Sigue buscando
+    decodificarTablaAux(lista, Nil, " ") //La cadena comienza vacia
 
 
 }

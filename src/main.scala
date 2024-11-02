@@ -28,3 +28,4 @@ def listaCharsADistFrec(listaChar: List[Char]): List[(Char, Int)] =
     else ListaCharsAux(nuevafrec, resto)
     ListaCharsAux(Nil,listaChar)
   */
+
