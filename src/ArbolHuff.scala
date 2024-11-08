@@ -150,7 +150,7 @@ object ArbolHuff {
     crearArbolHuffman(cadena)
     
 
-  type Bit = 0 | 1
+  private type Bit = 0 | 1
   private type TablaCodigos = List[(Char, List[Bit])]
 
   // Transforma un árbol de Huffman en una tabla de codificaciónjengi
