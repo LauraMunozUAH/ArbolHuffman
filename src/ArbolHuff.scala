@@ -103,6 +103,7 @@ def esListaSingleton(lista: List[ArbolHuff]): Boolean =
 
 
 //Función que coge una lista de nodos de clase ArbolHuff ordenandolos por sus pesos de forma creciente y combinandolos
+@tailrec
 def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
   def creaRamaHuff(izq: ArbolHuff, dcha: ArbolHuff): RamaHuff =
     RamaHuff(izq, dcha)
@@ -121,15 +122,15 @@ def insertarConOrden(nuevaRama: ArbolHuff, lista: List[ArbolHuff]): List[ArbolHu
     if (nuevaRama.pesoArbol <= head.pesoArbol) nuevaRama :: lista
     else  head :: insertarConOrden(nuevaRama,tail )
 
-def repetirHasta(combinar: List[ArbolHuff] => List[ArbolHuff], esListaSingleton: List[ArbolHuff] => Boolean)(lista: List[ArbolHuff]): List[ArbolHuff] = {
-  if esListaSingleton(lista) then lista // Caso base
-  else {
-    val nuevalista = combinar(lista)
-    repetirHasta(combinar, esListaSingleton)(nuevalista)
-  }
-}
 //Crear el Arbol de Huffman
 def crearArbolHuffman(cadena:String):ArbolHuff=
+  @tailrec
+  def repetirHasta(combinar: List[ArbolHuff] => List[ArbolHuff], esListaSingleton: List[ArbolHuff] => Boolean)(lista: List[ArbolHuff]): List[ArbolHuff] =
+    if esListaSingleton(lista) then lista // Caso base
+    else
+      val nuevalista = combinar(lista)
+      repetirHasta(combinar, esListaSingleton)(nuevalista)
+      
   //Lista de caracteres
   val listaChars= cadenaAListaChars(cadena)
   //frecuencias
@@ -140,6 +141,9 @@ def crearArbolHuffman(cadena:String):ArbolHuff=
   repetirHasta(combinar, esListaSingleton)(listaHojas) match
     case List(arbol)=> arbol //devuelve el arbol completo
     case _ => throw new IllegalStateException("Error al crear el arbol")
+
+  
+    
 
 object ArbolHuff {
   def apply(cadena: String): ArbolHuff =
@@ -156,26 +160,18 @@ object ArbolHuff {
       case RamaHuff(nodoIzq, nodoDcha) => recorrer(nodoIzq, codigoActual :+ 0) ::: recorrer(nodoDcha, codigoActual :+ 1)
 
     recorrer(arbol, Nil)
-
-  //encuentra el codigo correspondiente
-  def buscarCodigo(char: Char, tabla: TablaCodigos): List[Bit] = tabla match
-    case Nil => throw new IllegalArgumentException("no encontrado")
-    case (caracter, codigo) :: resto =>
-      if (caracter == char) then codigo
-      else buscarCodigo(char, resto)
-
-  // Encuentra el carácter
-  def buscarChar(bits: List[Bit], tabla: TablaCodigos): Char =
-    @tailrec
-    def buscarAux(tabla: TablaCodigos): Char = tabla match {
-      case Nil => throw new IllegalArgumentException("no encontrado")
-      case (caracter, codigo) :: resto =>
-        if (codigo == bits) then caracter
-        else buscarAux(resto) //Sigue buscando
-    }
-    buscarAux(tabla)
+  
+  
   //Codifica mensajes con la tabla
   def codificarTabla(arbol: TablaCodigos)(cadena: String): List[Bit]=
+    //encuentra el codigo correspondiente
+    @tailrec
+    def buscarCodigo(char: Char, tabla: TablaCodigos): List[Bit] = tabla match
+      case Nil => throw new IllegalArgumentException("no encontrado")
+      case (caracter, codigo) :: resto =>
+        if caracter == char then codigo
+        else buscarCodigo(char, resto)
+    @tailrec
     def codificarTablaAux(cadena: List[Char], resultado: List[Bit]): List[Bit] = cadena match
       case Nil => resultado
       case char :: resto =>
@@ -185,7 +181,17 @@ object ArbolHuff {
 
   //Decodifica mensajes empleando la tabla
   def decodificarTabla(tabla: TablaCodigos)(lista: List[Bit]): String =
-    def decodificarTablaAux(bits: List[Bit], resultado: String, acumulado: List[Bit]): String = bits match {
+    // Encuentra el carácter
+    def buscarChar(bits: List[Bit], tabla: TablaCodigos): Char =
+      @tailrec
+      def buscarAux(tabla: TablaCodigos): Char = tabla match
+        case Nil => throw new IllegalArgumentException("no encontrado")
+        case (caracter, codigo) :: resto =>
+          if codigo == bits then caracter
+          else buscarAux(resto) //Sigue buscando
+      buscarAux(tabla)    
+      
+    def decodificarTablaAux(bits: List[Bit], resultado: String, acumulado: List[Bit]): String = bits match 
       case Nil =>
         if acumulado.isEmpty then resultado  //caso acumulado vacio
         else resultado + buscarChar(acumulado, tabla)
@@ -196,7 +202,7 @@ object ArbolHuff {
           decodificarTablaAux(resto, resultado + char, Nil) //si encuentra el caracter reinicia el acumulado
         catch
           case _: IllegalArgumentException => decodificarTablaAux(resto, resultado, nuevoacumulado) //Si no, sigue acumulando
-    }
+    
     decodificarTablaAux(lista, "", Nil)
 }
 
