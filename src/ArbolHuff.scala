@@ -1,8 +1,8 @@
-import ArbolHuff.{codificarTabla, deArbolATabla, decodificarTabla}
 
 import scala.annotation.tailrec
 
 abstract class ArbolHuff {
+  //Calcula el peso del arbol
   def pesoArbol: Int = this match
     case HojaHuff(_, p) => p
     case RamaHuff(nodoIzq, nodoDcha) => nodoIzq.pesoArbol + nodoDcha.pesoArbol
@@ -45,7 +45,7 @@ abstract class ArbolHuff {
     cadena.foldLeft(List[Bit]())((acumulador, char) => acumulador ++ codificarAux(char, this, Nil))
 
   // Convierte la lista de caracteres en distribución de frecuencias.
-
+  
 }
 
 //Función que pasa de cadena de texto a lista de caracteres
@@ -64,6 +64,7 @@ def listaCharsACadena(listaCar: List[Char]): String =
     case head :: tail => lCharsACAux(tail, cadena + head) // Añadimos el carácter al StringBuilder y continuamos
 
   lCharsACAux(listaCar, "")
+// Convierte la lista de caracteres en distribución de frecuencias.
 def ListaCharsADistFrec(listaChar: List[Char]): List[(Char, Int)] =
   // Función auxiliar recursiva de cola
   @tailrec
@@ -143,7 +144,7 @@ def crearArbolHuffman(cadena:String):ArbolHuff=
 object ArbolHuff {
   def apply(cadena: String): ArbolHuff =
     crearArbolHuffman(cadena)
-
+    
 
   type Bit = 0 | 1
   private type TablaCodigos = List[(Char, List[Bit])]
@@ -175,7 +176,6 @@ object ArbolHuff {
     buscarAux(tabla)
   //Codifica mensajes con la tabla
   def codificarTabla(arbol: TablaCodigos)(cadena: String): List[Bit]=
-
     def codificarTablaAux(cadena: List[Char], resultado: List[Bit]): List[Bit] = cadena match
       case Nil => resultado
       case char :: resto =>
