@@ -44,7 +44,6 @@ abstract class ArbolHuff {
     //Convertir cada caracter de la cadena a binario y concatena la lista
     cadena.foldLeft(List[Bit]())((acumulador, char) => acumulador ++ codificarAux(char, this, Nil))
 
-  // Convierte la lista de caracteres en distribución de frecuencias.
   
 }
 
@@ -126,11 +125,12 @@ def insertarConOrden(nuevaRama: ArbolHuff, lista: List[ArbolHuff]): List[ArbolHu
 def crearArbolHuffman(cadena:String):ArbolHuff=
   @tailrec
   def repetirHasta(combinar: List[ArbolHuff] => List[ArbolHuff], esListaSingleton: List[ArbolHuff] => Boolean)(lista: List[ArbolHuff]): List[ArbolHuff] =
-    if esListaSingleton(lista) then lista // Caso base
+    if lista == Nil then Nil
+    else if esListaSingleton(lista) then lista // Caso base
     else
       val nuevalista = combinar(lista)
       repetirHasta(combinar, esListaSingleton)(nuevalista)
-      
+
   //Lista de caracteres
   val listaChars= cadenaAListaChars(cadena)
   //frecuencias
@@ -142,8 +142,8 @@ def crearArbolHuffman(cadena:String):ArbolHuff=
     case List(arbol)=> arbol //devuelve el arbol completo
     case _ => throw new IllegalStateException("Error al crear el arbol")
 
-  
-    
+
+
 
 object ArbolHuff {
   def apply(cadena: String): ArbolHuff =
@@ -160,8 +160,8 @@ object ArbolHuff {
       case RamaHuff(nodoIzq, nodoDcha) => recorrer(nodoIzq, codigoActual :+ 0) ::: recorrer(nodoDcha, codigoActual :+ 1)
 
     recorrer(arbol, Nil)
-  
-  
+
+
   //Codifica mensajes con la tabla
   def codificarTabla(arbol: TablaCodigos)(cadena: String): List[Bit]=
     //encuentra el codigo correspondiente
@@ -189,9 +189,9 @@ object ArbolHuff {
         case (caracter, codigo) :: resto =>
           if codigo == bits then caracter
           else buscarAux(resto) //Sigue buscando
-      buscarAux(tabla)    
-      
-    def decodificarTablaAux(bits: List[Bit], resultado: String, acumulado: List[Bit]): String = bits match 
+      buscarAux(tabla)
+
+    def decodificarTablaAux(bits: List[Bit], resultado: String, acumulado: List[Bit]): String = bits match
       case Nil =>
         if acumulado.isEmpty then resultado  //caso acumulado vacio
         else resultado + buscarChar(acumulado, tabla)
@@ -202,7 +202,7 @@ object ArbolHuff {
           decodificarTablaAux(resto, resultado + char, Nil) //si encuentra el caracter reinicia el acumulado
         catch
           case _: IllegalArgumentException => decodificarTablaAux(resto, resultado, nuevoacumulado) //Si no, sigue acumulando
-    
+
     decodificarTablaAux(lista, "", Nil)
 }
 
@@ -210,6 +210,7 @@ case class RamaHuff(nodoIzq:ArbolHuff, nodoDcha: ArbolHuff) extends ArbolHuff
 case class HojaHuff(caracter:Char, peso: Int) extends ArbolHuff
 
 object miPrograma extends App {
+  //TESTEAMOS UN CON UNA FRASE
   val textoOriginal = "ejemplo de Arbol Huffman"
 
   // Crear el árbol de Huffman
@@ -253,4 +254,115 @@ object miPrograma extends App {
 
   // Mostrar el peso del árbol
   println(s"Peso del árbol de Huffman: ${arbolHuffman.pesoArbol}")
+
+
+
+  //TESTEAMOS CON UNA CADENA CON UN ÚNICO ESPACIO
+  val textoOriginal3 = " "
+
+  // Crear el árbol de Huffman
+  val arbolHuffman3 = ArbolHuff(textoOriginal3)
+  println(s"Texto original: $textoOriginal3")
+
+  // Convertir el árbol a una tabla de códigos
+  val tablaCodigos3 = ArbolHuff.deArbolATabla(arbolHuffman3)
+  println(s"Tabla de códigos: $tablaCodigos3")
+
+  // Codificar el texto original
+  val codificacion3 = ArbolHuff.codificarTabla(tablaCodigos3)(textoOriginal3)
+  println(s"Codificación: $codificacion3")
+
+  // Decodificar la codificación de vuelta al texto original
+  val textoDecodificado3 = ArbolHuff.decodificarTabla(tablaCodigos3)(codificacion3)
+  println(s"Texto decodificado: $textoDecodificado3")
+
+  // Convertir la cadena a lista de caracteres
+  val listaChars3 = cadenaAListaChars(textoOriginal3)
+  println(s"Lista de caracteres de '$textoOriginal3': $listaChars3")
+
+  // Convertir la lista de caracteres de nuevo a cadena
+  val cadenaDesdeLista3 = listaCharsACadena(listaChars3)
+  println(s"Cadena convertida desde la lista de caracteres: $cadenaDesdeLista3")
+
+  // Probar la creación de la lista de distribución de frecuencias
+  val frecuencias3 = ListaCharsADistFrec(listaChars3)
+  println(s"Frecuencias de caracteres: $frecuencias3")
+
+  // Probar la conversión de frecuencias a hojas
+  val listaHojas3 = DistribFrecAListaHojas(frecuencias3)
+  println(s"Lista de hojas según frecuencias: $listaHojas3")
+
+  // Comprobar la combinación de nodos
+  val nodosCombinados3 = combinar(listaHojas3)
+  println(s"Nodos combinados: $nodosCombinados3")
+
+  // Comprobar si la lista de nodos tiene un solo elemento
+  println(s"La lista de nodos combinados tiene un único elemento: ${esListaSingleton(nodosCombinados3)}")
+
+  // Mostrar el peso del árbol
+  println(s"Peso del árbol de Huffman: ${arbolHuffman3.pesoArbol}")
+
+
+  //TESTEAMOS CON UNA CADEA VACÍA
+  val textoOriginal2 = ""
+
+  try {
+    // Intentamos crear el árbol de Huffman
+    val arbolHuffman2: ArbolHuff = ArbolHuff(textoOriginal2)
+
+    // Si se crea correctamente, mostramos el texto original
+    println(s"Texto original: $textoOriginal2")
+
+  } catch {
+    // Captura de cualquier excepción que ocurra
+    case e: Exception =>
+      println("Ocurrió un error al crear el árbol de Huffman.")
+  }
+  //Al crear el arbol salta el error ---> Caused by: java.lang.IllegalStateException: Error al crear el arbol
+  //que hemos tratado en la función crearArbolHuffman.
+
+
+  //TESTEAMOS EL CASO EN EL QUE HAY TILDES
+  val textoOriginal4 = "aaáá"
+  // Crear el árbol de Huffman
+  val arbolHuffman4 = ArbolHuff(textoOriginal4)
+  println(s"Texto original: $textoOriginal4")
+
+  // Convertir el árbol a una tabla de códigos
+  val tablaCodigos4 = ArbolHuff.deArbolATabla(arbolHuffman4)
+  println(s"Tabla de códigos: $tablaCodigos4")
+
+  // Codificar el texto original
+  val codificacion4 = ArbolHuff.codificarTabla(tablaCodigos4)(textoOriginal4)
+  println(s"Codificación: $codificacion4")
+
+  // Decodificar la codificación de vuelta al texto original
+  val textoDecodificado4 = ArbolHuff.decodificarTabla(tablaCodigos4)(codificacion4)
+  println(s"Texto decodificado: $textoDecodificado4")
+
+  // Convertir la cadena a lista de caracteres
+  val listaChars4 = cadenaAListaChars(textoOriginal4)
+  println(s"Lista de caracteres de '$textoOriginal4': $listaChars4")
+
+  // Convertir la lista de caracteres de nuevo a cadena
+  val cadenaDesdeLista4 = listaCharsACadena(listaChars4)
+  println(s"Cadena convertida desde la lista de caracteres: $cadenaDesdeLista4")
+
+  // Probar la creación de la lista de distribución de frecuencias
+  val frecuencias4 = ListaCharsADistFrec(listaChars4)
+  println(s"Frecuencias de caracteres: $frecuencias4")
+
+  // Probar la conversión de frecuencias a hojas
+  val listaHojas4 = DistribFrecAListaHojas(frecuencias4)
+  println(s"Lista de hojas según frecuencias: $listaHojas4")
+
+  // Comprobar la combinación de nodos
+  val nodosCombinados4 = combinar(listaHojas4)
+  println(s"Nodos combinados: $nodosCombinados4")
+
+  // Comprobar si la lista de nodos tiene un solo elemento
+  println(s"La lista de nodos combinados tiene un único elemento: ${esListaSingleton(nodosCombinados4)}")
+
+  // Mostrar el peso del árbol
+  println(s"Peso del árbol de Huffman: ${arbolHuffman4.pesoArbol}")
 }
