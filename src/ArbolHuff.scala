@@ -8,15 +8,15 @@ abstract class ArbolHuff {
     case RamaHuff(nodoIzq, nodoDcha) => nodoIzq.pesoArbol + nodoDcha.pesoArbol
 
   //Función que devuelve la lista de caracteres de un ArbolHuff
-  def caracteres:List[Char]= this match
+  private def caracteres:List[Char]= this match
     case HojaHuff(c, _) => List(c)
     case RamaHuff(nodoIzq, nodoDcha) => nodoIzq.caracteres ++ nodoDcha.caracteres
 
 
-  type Bit = 0 | 1 //Creación del tipo de dato bit
+  private type Bit = 0 | 1 //Creación del tipo de dato bit
 
   // Función que a partir de una lista de bits devuelve el texto
-  def decodificar(bits: List[Bit]): String =
+  private def decodificar(bits: List[Bit]): String =
     @tailrec
     def decodificarAux(subArbol: ArbolHuff, restobits: List[Bit], resultado: List[Char]): String = (subArbol, restobits) match
       //Caso hoja, añadir caracter y empezar de nuevo
@@ -30,21 +30,22 @@ abstract class ArbolHuff {
     decodificarAux(this, bits, Nil)
 
   //Determina si el árbol contiene o no un caracter
-  def arbolcontiene(char:Char): Boolean = this match
+  private def arbolcontiene(char:Char): Boolean = this match
     case HojaHuff(caracter, _) => caracter == char
     case RamaHuff(nodoIzq, nodoDcha) => nodoIzq.arbolcontiene(char) || nodoDcha.arbolcontiene(char)
+
+
   //Convierte el texto a una cadena de bits
-  def codificar(cadena: String): List[Bit] =
+  private def codificar(cadena: String): List[Bit] =
     @tailrec
     def codificarAux(caracter: Char, arbol: ArbolHuff, listabits: List[Bit]): List[Bit] = arbol match
       case HojaHuff(c, _) if c == caracter => listabits
       case RamaHuff(nodoIzq, _) if nodoIzq.arbolcontiene(caracter) => codificarAux(caracter, nodoIzq, listabits :+ 0)
       case RamaHuff(_, nodoDcha) if nodoDcha.arbolcontiene(caracter) => codificarAux(caracter, nodoDcha, listabits :+ 1)
       case _ => throw new IllegalArgumentException("Carácter no está")
+
     //Convertir cada caracter de la cadena a binario y concatena la lista
     cadena.foldLeft(List[Bit]())((acumulador, char) => acumulador ++ codificarAux(char, this, Nil))
-
-  
 }
 
 //Función que pasa de cadena de texto a lista de caracteres
@@ -104,6 +105,12 @@ def esListaSingleton(lista: List[ArbolHuff]): Boolean =
 //Función que coge una lista de nodos de clase ArbolHuff ordenandolos por sus pesos de forma creciente y combinandolos
 @tailrec
 def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
+  def insertarConOrden(nuevaRama: ArbolHuff, lista: List[ArbolHuff]): List[ArbolHuff] = lista match
+    case Nil => List(nuevaRama)
+    case head :: tail =>
+      if (nuevaRama.pesoArbol <= head.pesoArbol) nuevaRama :: lista
+      else head :: insertarConOrden(nuevaRama, tail)
+
   def creaRamaHuff(izq: ArbolHuff, dcha: ArbolHuff): RamaHuff =
     RamaHuff(izq, dcha)
 
@@ -114,12 +121,6 @@ def combinar(nodos: List[ArbolHuff]): List[ArbolHuff] =
     val nuevalista = insertarConOrden(nuevaRama, nodos.tail.tail) //añade la rama a la lista
     combinar(nuevalista) //combina la lista
 
-
-def insertarConOrden(nuevaRama: ArbolHuff, lista: List[ArbolHuff]): List[ArbolHuff] = lista match
-  case Nil => List(nuevaRama)
-  case head :: tail =>
-    if (nuevaRama.pesoArbol <= head.pesoArbol) nuevaRama :: lista
-    else  head :: insertarConOrden(nuevaRama,tail )
 
 //Crear el Arbol de Huffman
 def crearArbolHuffman(cadena:String):ArbolHuff=
@@ -211,42 +212,42 @@ case class HojaHuff(caracter:Char, peso: Int) extends ArbolHuff
 
 object miPrograma extends App {
   //TESTEAMOS UN CON UNA FRASE
-  val textoOriginal = "ejemplo de Arbol Huffman"
+  private val textoOriginal = "ejemplo de Arbol Huffman"
 
   // Crear el árbol de Huffman
-  val arbolHuffman = ArbolHuff(textoOriginal)
+  private val arbolHuffman = ArbolHuff(textoOriginal)
   println(s"Texto original: $textoOriginal")
 
   // Convertir el árbol a una tabla de códigos
-  val tablaCodigos = ArbolHuff.deArbolATabla(arbolHuffman)
+  private val tablaCodigos = ArbolHuff.deArbolATabla(arbolHuffman)
   println(s"Tabla de códigos: $tablaCodigos")
 
   // Codificar el texto original
-  val codificacion = ArbolHuff.codificarTabla(tablaCodigos)(textoOriginal)
+  private val codificacion = ArbolHuff.codificarTabla(tablaCodigos)(textoOriginal)
   println(s"Codificación: $codificacion")
 
   // Decodificar la codificación de vuelta al texto original
-  val textoDecodificado = ArbolHuff.decodificarTabla(tablaCodigos)(codificacion)
+  private val textoDecodificado = ArbolHuff.decodificarTabla(tablaCodigos)(codificacion)
   println(s"Texto decodificado: $textoDecodificado")
 
   // Convertir la cadena a lista de caracteres
-  val listaChars = cadenaAListaChars(textoOriginal)
+  private val listaChars = cadenaAListaChars(textoOriginal)
   println(s"Lista de caracteres de '$textoOriginal': $listaChars")
 
   // Convertir la lista de caracteres de nuevo a cadena
-  val cadenaDesdeLista = listaCharsACadena(listaChars)
+  private val cadenaDesdeLista = listaCharsACadena(listaChars)
   println(s"Cadena convertida desde la lista de caracteres: $cadenaDesdeLista")
 
   // Probar la creación de la lista de distribución de frecuencias
-  val frecuencias = ListaCharsADistFrec(listaChars)
+  private val frecuencias = ListaCharsADistFrec(listaChars)
   println(s"Frecuencias de caracteres: $frecuencias")
 
   // Probar la conversión de frecuencias a hojas
-  val listaHojas = DistribFrecAListaHojas(frecuencias)
+  private val listaHojas = DistribFrecAListaHojas(frecuencias)
   println(s"Lista de hojas según frecuencias: $listaHojas")
 
   // Comprobar la combinación de nodos
-  val nodosCombinados = combinar(listaHojas)
+  private val nodosCombinados = combinar(listaHojas)
   println(s"Nodos combinados: $nodosCombinados")
 
   // Comprobar si la lista de nodos tiene un solo elemento
@@ -258,42 +259,42 @@ object miPrograma extends App {
 
 
   //TESTEAMOS CON UNA CADENA CON UN ÚNICO ESPACIO
-  val textoOriginal3 = " "
+  private val textoOriginal3 = " "
 
   // Crear el árbol de Huffman
-  val arbolHuffman3 = ArbolHuff(textoOriginal3)
+  private val arbolHuffman3 = ArbolHuff(textoOriginal3)
   println(s"Texto original: $textoOriginal3")
 
   // Convertir el árbol a una tabla de códigos
-  val tablaCodigos3 = ArbolHuff.deArbolATabla(arbolHuffman3)
+  private val tablaCodigos3 = ArbolHuff.deArbolATabla(arbolHuffman3)
   println(s"Tabla de códigos: $tablaCodigos3")
 
   // Codificar el texto original
-  val codificacion3 = ArbolHuff.codificarTabla(tablaCodigos3)(textoOriginal3)
+  private val codificacion3 = ArbolHuff.codificarTabla(tablaCodigos3)(textoOriginal3)
   println(s"Codificación: $codificacion3")
 
   // Decodificar la codificación de vuelta al texto original
-  val textoDecodificado3 = ArbolHuff.decodificarTabla(tablaCodigos3)(codificacion3)
+  private val textoDecodificado3 = ArbolHuff.decodificarTabla(tablaCodigos3)(codificacion3)
   println(s"Texto decodificado: $textoDecodificado3")
 
   // Convertir la cadena a lista de caracteres
-  val listaChars3 = cadenaAListaChars(textoOriginal3)
+  private val listaChars3 = cadenaAListaChars(textoOriginal3)
   println(s"Lista de caracteres de '$textoOriginal3': $listaChars3")
 
   // Convertir la lista de caracteres de nuevo a cadena
-  val cadenaDesdeLista3 = listaCharsACadena(listaChars3)
+  private val cadenaDesdeLista3 = listaCharsACadena(listaChars3)
   println(s"Cadena convertida desde la lista de caracteres: $cadenaDesdeLista3")
 
   // Probar la creación de la lista de distribución de frecuencias
-  val frecuencias3 = ListaCharsADistFrec(listaChars3)
+  private val frecuencias3 = ListaCharsADistFrec(listaChars3)
   println(s"Frecuencias de caracteres: $frecuencias3")
 
   // Probar la conversión de frecuencias a hojas
-  val listaHojas3 = DistribFrecAListaHojas(frecuencias3)
+  private val listaHojas3 = DistribFrecAListaHojas(frecuencias3)
   println(s"Lista de hojas según frecuencias: $listaHojas3")
 
   // Comprobar la combinación de nodos
-  val nodosCombinados3 = combinar(listaHojas3)
+  private val nodosCombinados3 = combinar(listaHojas3)
   println(s"Nodos combinados: $nodosCombinados3")
 
   // Comprobar si la lista de nodos tiene un solo elemento
@@ -304,7 +305,7 @@ object miPrograma extends App {
 
 
   //TESTEAMOS CON UNA CADEA VACÍA
-  val textoOriginal2 = ""
+  private val textoOriginal2 = ""
 
   try {
     // Intentamos crear el árbol de Huffman
@@ -322,42 +323,42 @@ object miPrograma extends App {
   //que hemos tratado en la función crearArbolHuffman.
 
 
-  //TESTEAMOS EL CASO EN EL QUE HAY TILDES
-  val textoOriginal4 = "aaáá"
+  //TESTEAMOS EL CASO EN EL QUE HAY TILDES, MAYÚSCULAS Y SIGNOS DE PUNTUACIÓN
+  private val textoOriginal4 = "aaááAA,,..;:"
   // Crear el árbol de Huffman
-  val arbolHuffman4 = ArbolHuff(textoOriginal4)
+  private val arbolHuffman4 = ArbolHuff(textoOriginal4)
   println(s"Texto original: $textoOriginal4")
 
   // Convertir el árbol a una tabla de códigos
-  val tablaCodigos4 = ArbolHuff.deArbolATabla(arbolHuffman4)
+  private val tablaCodigos4 = ArbolHuff.deArbolATabla(arbolHuffman4)
   println(s"Tabla de códigos: $tablaCodigos4")
 
   // Codificar el texto original
-  val codificacion4 = ArbolHuff.codificarTabla(tablaCodigos4)(textoOriginal4)
+  private val codificacion4 = ArbolHuff.codificarTabla(tablaCodigos4)(textoOriginal4)
   println(s"Codificación: $codificacion4")
 
   // Decodificar la codificación de vuelta al texto original
-  val textoDecodificado4 = ArbolHuff.decodificarTabla(tablaCodigos4)(codificacion4)
+  private val textoDecodificado4 = ArbolHuff.decodificarTabla(tablaCodigos4)(codificacion4)
   println(s"Texto decodificado: $textoDecodificado4")
 
   // Convertir la cadena a lista de caracteres
-  val listaChars4 = cadenaAListaChars(textoOriginal4)
+  private val listaChars4 = cadenaAListaChars(textoOriginal4)
   println(s"Lista de caracteres de '$textoOriginal4': $listaChars4")
 
   // Convertir la lista de caracteres de nuevo a cadena
-  val cadenaDesdeLista4 = listaCharsACadena(listaChars4)
+  private val cadenaDesdeLista4 = listaCharsACadena(listaChars4)
   println(s"Cadena convertida desde la lista de caracteres: $cadenaDesdeLista4")
 
   // Probar la creación de la lista de distribución de frecuencias
-  val frecuencias4 = ListaCharsADistFrec(listaChars4)
+  private val frecuencias4 = ListaCharsADistFrec(listaChars4)
   println(s"Frecuencias de caracteres: $frecuencias4")
 
   // Probar la conversión de frecuencias a hojas
-  val listaHojas4 = DistribFrecAListaHojas(frecuencias4)
+  private val listaHojas4 = DistribFrecAListaHojas(frecuencias4)
   println(s"Lista de hojas según frecuencias: $listaHojas4")
 
   // Comprobar la combinación de nodos
-  val nodosCombinados4 = combinar(listaHojas4)
+  private val nodosCombinados4 = combinar(listaHojas4)
   println(s"Nodos combinados: $nodosCombinados4")
 
   // Comprobar si la lista de nodos tiene un solo elemento
